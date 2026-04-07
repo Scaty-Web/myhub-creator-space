@@ -90,7 +90,7 @@ const Projects = () => {
                 scratchId: p.scratch_id,
                 likes: p.likes,
                 views: p.views,
-                author: p.profiles?.username ?? "Unknown",
+                author: p.author ?? "Unknown",
               }}
               userId={user?.id}
               onLikeToggle={fetchProjects}
