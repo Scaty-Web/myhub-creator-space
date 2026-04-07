@@ -13,6 +13,7 @@ import ChatRoom from "./pages/ChatRoom";
 import MiniGames from "./pages/MiniGames";
 import AIChat from "./pages/AIChat";
 import Auth from "./pages/Auth";
+import AccountSettings from "./pages/AccountSettings";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -35,6 +36,7 @@ const App = () => (
                 <Route path="/games" element={<MiniGames />} />
                 <Route path="/ai" element={<AIChat />} />
                 <Route path="/auth" element={<Auth />} />
+                <Route path="/settings" element={<AccountSettings />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </main>
