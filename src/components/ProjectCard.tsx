@@ -1,9 +1,49 @@
 import { Heart, Eye } from "lucide-react";
-import { useAppStore, type Project } from "@/lib/store";
-import { t } from "@/lib/i18n";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
-const ProjectCard = ({ project }: { project: Project }) => {
-  const { lang, likeProject } = useAppStore();
+interface ProjectData {
+  id: string;
+  name: string;
+  description: string;
+  scratchId: string;
+  likes: number;
+  views: number;
+  author: string;
+}
+
+interface Props {
+  project: ProjectData;
+  userId?: string;
+  onLikeToggle?: () => void;
+}
+
+const ProjectCard = ({ project, userId, onLikeToggle }: Props) => {
+  const handleLike = async () => {
+    if (!userId) {
+      toast.error("Giriş yapmalısınız / Please log in");
+      return;
+    }
+
+    // Check if already liked
+    const { data: existing } = await supabase
+      .from("project_likes")
+      .select("id")
+      .eq("user_id", userId)
+      .eq("project_id", project.id)
+      .single();
+
+    if (existing) {
+      await supabase.from("project_likes").delete().eq("id", existing.id);
+    } else {
+      await supabase.from("project_likes").insert({
+        user_id: userId,
+        project_id: project.id,
+      });
+    }
+
+    onLikeToggle?.();
+  };
 
   return (
     <div className="bg-card border border-border rounded-lg overflow-hidden animate-fade-in hover:border-primary/40 transition-colors">
@@ -24,7 +64,7 @@ const ProjectCard = ({ project }: { project: Project }) => {
           <span className="text-xs">@{project.author}</span>
           <div className="flex items-center gap-3">
             <button
-              onClick={() => likeProject(project.id)}
+              onClick={handleLike}
               className="flex items-center gap-1 hover:text-pink transition-colors"
             >
               <Heart className="h-4 w-4" />

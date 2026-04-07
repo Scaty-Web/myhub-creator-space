@@ -2,6 +2,8 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { t } from "@/lib/i18n";
 import { useAppStore } from "@/lib/store";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
@@ -17,27 +19,40 @@ function extractScratchId(link: string): string | null {
 }
 
 const ShareProject = () => {
-  const { lang, addProject } = useAppStore();
+  const { lang } = useAppStore();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [name, setName] = useState("");
   const [desc, setDesc] = useState("");
   const [link, setLink] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const scratchId = extractScratchId(link);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!user) {
+      toast.error(t(lang, "login_required"));
+      navigate("/auth");
+      return;
+    }
     if (!name.trim() || !scratchId) return;
 
-    addProject({
+    setLoading(true);
+    const { error } = await supabase.from("projects").insert({
+      user_id: user.id,
       name: name.trim(),
       description: desc.trim(),
-      scratchId,
-      author: "User",
+      scratch_id: scratchId,
     });
 
-    toast.success(lang === "tr" ? "Proje paylaşıldı!" : "Project shared!");
-    navigate("/projects");
+    if (error) {
+      toast.error(error.message);
+    } else {
+      toast.success(t(lang, "project_shared"));
+      navigate("/projects");
+    }
+    setLoading(false);
   };
 
   return (
@@ -85,8 +100,8 @@ const ShareProject = () => {
           </div>
         )}
 
-        <Button type="submit" disabled={!name.trim() || !scratchId} className="w-full gradient-primary text-primary-foreground border-0">
-          {t(lang, "publish")}
+        <Button type="submit" disabled={!name.trim() || !scratchId || loading} className="w-full gradient-primary text-primary-foreground border-0">
+          {loading ? "..." : t(lang, "publish")}
         </Button>
       </form>
     </div>

@@ -1,8 +1,10 @@
 import { Link, useLocation } from "react-router-dom";
 import { t } from "@/lib/i18n";
 import { useAppStore } from "@/lib/store";
+import { useAuth } from "@/contexts/AuthContext";
 import LangSwitcher from "./LangSwitcher";
-import { Home, FolderOpen, Share2, MessageCircle, Gamepad2, Bot } from "lucide-react";
+import { Home, FolderOpen, Share2, MessageCircle, Gamepad2, Bot, LogIn, LogOut, User } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 const navItems = [
   { key: "home", path: "/", icon: Home },
@@ -15,6 +17,7 @@ const navItems = [
 
 const Navbar = () => {
   const { lang } = useAppStore();
+  const { user, username, signOut } = useAuth();
   const location = useLocation();
 
   return (
@@ -45,7 +48,33 @@ const Navbar = () => {
           })}
         </div>
 
-        <LangSwitcher />
+        <div className="flex items-center gap-2">
+          <LangSwitcher />
+          {user ? (
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-muted-foreground hidden sm:inline">
+                <User className="inline h-3.5 w-3.5 mr-1" />
+                {username}
+              </span>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => signOut()}
+                className="text-muted-foreground hover:text-foreground"
+              >
+                <LogOut className="h-4 w-4" />
+                <span className="hidden md:inline ml-1">{t(lang, "logout")}</span>
+              </Button>
+            </div>
+          ) : (
+            <Button asChild variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
+              <Link to="/auth">
+                <LogIn className="h-4 w-4" />
+                <span className="hidden md:inline ml-1">{t(lang, "login")}</span>
+              </Link>
+            </Button>
+          )}
+        </div>
       </div>
     </nav>
   );
