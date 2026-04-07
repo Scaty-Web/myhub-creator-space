@@ -8,7 +8,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { Share2 } from "lucide-react";
+import { Share2, Lock } from "lucide-react";
+import { Link } from "react-router-dom";
 
 function extractScratchId(link: string): string | null {
   const match = link.match(/scratch\.mit\.edu\/projects\/(\d+)/);
@@ -29,13 +30,20 @@ const ShareProject = () => {
 
   const scratchId = extractScratchId(link);
 
+  if (!user) {
+    return (
+      <div className="container max-w-2xl py-20 text-center space-y-4 animate-fade-in">
+        <Lock className="h-12 w-12 mx-auto text-muted-foreground" />
+        <h2 className="text-xl font-bold text-foreground">{t(lang, "login_required")}</h2>
+        <Button asChild className="gradient-primary text-primary-foreground border-0">
+          <Link to="/auth">{t(lang, "login")}</Link>
+        </Button>
+      </div>
+    );
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user) {
-      toast.error(t(lang, "login_required"));
-      navigate("/auth");
-      return;
-    }
     if (!name.trim() || !scratchId) return;
 
     setLoading(true);
