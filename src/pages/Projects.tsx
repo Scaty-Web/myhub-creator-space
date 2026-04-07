@@ -16,7 +16,7 @@ interface DBProject {
   views: number;
   created_at: string;
   user_id: string;
-  profiles?: { username: string } | null;
+  author?: string;
 }
 
 const Projects = () => {
@@ -29,9 +29,23 @@ const Projects = () => {
   const fetchProjects = async () => {
     const { data } = await supabase
       .from("projects")
-      .select("*, profiles(username)")
+      .select("*")
       .order("created_at", { ascending: false });
-    setProjects((data as DBProject[]) ?? []);
+
+    const projectList = data ?? [];
+
+    // Fetch usernames
+    const userIds = [...new Set(projectList.map((p) => p.user_id))];
+    const { data: profiles } = await supabase
+      .from("profiles")
+      .select("user_id, username")
+      .in("user_id", userIds);
+
+    const usernameMap = new Map(profiles?.map((p) => [p.user_id, p.username]) ?? []);
+
+    setProjects(
+      projectList.map((p) => ({ ...p, author: usernameMap.get(p.user_id) ?? "Unknown" }))
+    );
     setLoading(false);
   };
 
