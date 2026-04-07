@@ -1,9 +1,11 @@
 import { useState } from "react";
 import { t } from "@/lib/i18n";
 import { useAppStore } from "@/lib/store";
+import { useAuth } from "@/contexts/AuthContext";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Send, MessageCircle } from "lucide-react";
+import { Send, MessageCircle, Lock } from "lucide-react";
+import { Link } from "react-router-dom";
 
 interface Message {
   id: number;
@@ -14,10 +16,23 @@ interface Message {
 
 const ChatRoom = () => {
   const { lang } = useAppStore();
+  const { user, username } = useAuth();
   const [messages, setMessages] = useState<Message[]>([
     { id: 1, author: "Bot", text: lang === "tr" ? "Sohbete hoş geldiniz! 🎉" : "Welcome to the chat! 🎉", time: "12:00" },
   ]);
   const [input, setInput] = useState("");
+
+  if (!user) {
+    return (
+      <div className="container max-w-2xl py-20 text-center space-y-4 animate-fade-in">
+        <Lock className="h-12 w-12 mx-auto text-muted-foreground" />
+        <h2 className="text-xl font-bold text-foreground">{t(lang, "login_required")}</h2>
+        <Button asChild className="gradient-primary text-primary-foreground border-0">
+          <Link to="/auth">{t(lang, "login")}</Link>
+        </Button>
+      </div>
+    );
+  }
 
   const send = () => {
     if (!input.trim()) return;
@@ -26,7 +41,7 @@ const ChatRoom = () => {
       ...prev,
       {
         id: Date.now(),
-        author: "Sen",
+        author: username ?? "User",
         text: input.trim(),
         time: `${now.getHours().toString().padStart(2, "0")}:${now.getMinutes().toString().padStart(2, "0")}`,
       },
@@ -44,10 +59,10 @@ const ChatRoom = () => {
       <div className="bg-card border border-border rounded-lg flex flex-col h-[500px]">
         <div className="flex-1 overflow-y-auto p-4 space-y-3">
           {messages.map((m) => (
-            <div key={m.id} className={`flex flex-col ${m.author === "Sen" ? "items-end" : "items-start"}`}>
+            <div key={m.id} className={`flex flex-col ${m.author === (username ?? "User") ? "items-end" : "items-start"}`}>
               <div
                 className={`rounded-lg px-4 py-2 max-w-[70%] text-sm ${
-                  m.author === "Sen"
+                  m.author === (username ?? "User")
                     ? "gradient-primary text-primary-foreground"
                     : "bg-secondary text-foreground"
                 }`}
