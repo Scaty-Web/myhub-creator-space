@@ -3,7 +3,7 @@ import { t } from "@/lib/i18n";
 import { useAppStore } from "@/lib/store";
 import { useAuth } from "@/contexts/AuthContext";
 import LangSwitcher from "./LangSwitcher";
-import { Home, FolderOpen, Share2, MessageCircle, Gamepad2, Bot, LogIn, LogOut, User } from "lucide-react";
+import { Home, FolderOpen, Share2, MessageCircle, Gamepad2, Bot, LogIn, LogOut, User, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const navItems = [
@@ -56,6 +56,9 @@ const Navbar = () => {
                 <User className="inline h-3.5 w-3.5 mr-1" />
                 {username}
               </span>
+              <Link to="/settings" className="text-muted-foreground hover:text-foreground p-1.5 rounded-md hover:bg-secondary transition-colors">
+                <Settings className="h-4 w-4" />
+              </Link>
               <Button
                 variant="ghost"
                 size="sm"
