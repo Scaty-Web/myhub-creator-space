@@ -8,6 +8,8 @@ import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import Index from "./pages/Index";
 import Projects from "./pages/Projects";
+import ProjectDetail from "./pages/ProjectDetail";
+import Help from "./pages/Help";
 import ShareProject from "./pages/ShareProject";
 import ChatRoom from "./pages/ChatRoom";
 import MiniGames from "./pages/MiniGames";
@@ -31,6 +33,8 @@ const App = () => (
               <Routes>
                 <Route path="/" element={<Index />} />
                 <Route path="/projects" element={<Projects />} />
+                <Route path="/project/:id" element={<ProjectDetail />} />
+                <Route path="/help" element={<Help />} />
                 <Route path="/share" element={<ShareProject />} />
                 <Route path="/chat" element={<ChatRoom />} />
                 <Route path="/games" element={<MiniGames />} />
