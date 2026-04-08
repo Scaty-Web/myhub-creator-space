@@ -94,6 +94,41 @@ export type Database = {
         }
         Relationships: []
       }
+      project_comments: {
+        Row: {
+          created_at: string
+          id: string
+          project_id: string
+          text: string
+          user_id: string
+          username: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          project_id: string
+          text: string
+          user_id: string
+          username: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          project_id?: string
+          text?: string
+          user_id?: string
+          username?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_comments_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       project_likes: {
         Row: {
           created_at: string
