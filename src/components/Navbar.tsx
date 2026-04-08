@@ -25,7 +25,6 @@ const Navbar = () => {
       <div className="container flex items-center justify-between h-14">
         <Link to="/" className="flex items-center gap-2 font-bold text-lg">
           <span className="text-gradient">MYHUB</span>
-          <span className="text-xs text-muted-foreground hidden sm:inline">DEVELOP SPACE</span>
         </Link>
 
         <div className="flex items-center gap-1">
