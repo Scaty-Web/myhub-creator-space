@@ -107,7 +107,7 @@ const ChatRoom = () => {
       created_by: user.id,
     }).select().single();
     if (error) { toast.error(error.message); return; }
-    setRooms((prev) => [data, ...prev]);
+    setRooms((prev) => [{ ...data, has_password: !!newRoomPassword.trim() } as Room, ...prev]);
     setNewRoomName("");
     setNewRoomPassword("");
     setShowCreate(false);
@@ -115,7 +115,7 @@ const ChatRoom = () => {
   };
 
   const joinRoom = (room: Room) => {
-    if (room.password) {
+    if (room.has_password) {
       setAskPasswordRoom(room);
       setJoinPassword("");
     } else {
