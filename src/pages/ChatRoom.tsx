@@ -124,9 +124,13 @@ const ChatRoom = () => {
     }
   };
 
-  const confirmJoin = () => {
+  const confirmJoin = async () => {
     if (!askPasswordRoom) return;
-    if (joinPassword !== askPasswordRoom.password) {
+    const { data: isValid } = await supabase.rpc("verify_room_password", {
+      room_id: askPasswordRoom.id,
+      entered_password: joinPassword,
+    });
+    if (!isValid) {
       toast.error(t(lang, "wrong_password"));
       return;
     }
@@ -236,7 +240,7 @@ const ChatRoom = () => {
                     {new Date(room.created_at).toLocaleDateString()}
                   </p>
                 </div>
-                {room.password && <Lock className="h-3.5 w-3.5 text-muted-foreground" />}
+                {room.has_password && <Lock className="h-3.5 w-3.5 text-muted-foreground" />}
               </div>
               {room.created_by === user.id && (
                 <Button
