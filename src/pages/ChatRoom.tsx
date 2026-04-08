@@ -12,7 +12,7 @@ import { toast } from "sonner";
 interface Room {
   id: string;
   name: string;
-  password: string | null;
+  has_password: boolean;
   created_by: string;
   created_at: string;
 }
@@ -44,8 +44,17 @@ const ChatRoom = () => {
   // Fetch rooms
   useEffect(() => {
     const fetchRooms = async () => {
-      const { data } = await supabase.from("chat_rooms").select("*").order("created_at", { ascending: false });
-      if (data) setRooms(data);
+      const { data } = await supabase.from("chat_rooms").select("id, name, created_by, created_at").order("created_at", { ascending: false });
+      if (data) setRooms(data.map((r: any) => ({ ...r, has_password: false })));
+      // Check which rooms have passwords via RPC
+      if (data) {
+        const updated = await Promise.all(data.map(async (r: any) => {
+          // A room has a password if verify_room_password with empty string returns false
+          const { data: isOpen } = await supabase.rpc("verify_room_password", { room_id: r.id, entered_password: "" });
+          return { ...r, has_password: isOpen === false };
+        }));
+        setRooms(updated);
+      }
     };
     fetchRooms();
   }, []);
@@ -98,7 +107,7 @@ const ChatRoom = () => {
       created_by: user.id,
     }).select().single();
     if (error) { toast.error(error.message); return; }
-    setRooms((prev) => [data, ...prev]);
+    setRooms((prev) => [{ ...data, has_password: !!newRoomPassword.trim() } as Room, ...prev]);
     setNewRoomName("");
     setNewRoomPassword("");
     setShowCreate(false);
@@ -106,7 +115,7 @@ const ChatRoom = () => {
   };
 
   const joinRoom = (room: Room) => {
-    if (room.password) {
+    if (room.has_password) {
       setAskPasswordRoom(room);
       setJoinPassword("");
     } else {
@@ -115,9 +124,13 @@ const ChatRoom = () => {
     }
   };
 
-  const confirmJoin = () => {
+  const confirmJoin = async () => {
     if (!askPasswordRoom) return;
-    if (joinPassword !== askPasswordRoom.password) {
+    const { data: isValid } = await supabase.rpc("verify_room_password", {
+      room_id: askPasswordRoom.id,
+      entered_password: joinPassword,
+    });
+    if (!isValid) {
       toast.error(t(lang, "wrong_password"));
       return;
     }
@@ -227,7 +240,7 @@ const ChatRoom = () => {
                     {new Date(room.created_at).toLocaleDateString()}
                   </p>
                 </div>
-                {room.password && <Lock className="h-3.5 w-3.5 text-muted-foreground" />}
+                {room.has_password && <Lock className="h-3.5 w-3.5 text-muted-foreground" />}
               </div>
               {room.created_by === user.id && (
                 <Button
