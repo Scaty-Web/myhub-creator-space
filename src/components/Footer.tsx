@@ -1,4 +1,5 @@
-import { Github } from "lucide-react";
+import { Github, HelpCircle } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const Footer = () => (
   <footer className="border-t border-border bg-popover py-4 px-6 text-center">
@@ -21,6 +22,14 @@ const Footer = () => (
       >
         <Github className="h-4 w-4" />
       </a>
+      &nbsp;
+      <Link
+        to="/help"
+        className="inline-flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors"
+      >
+        <HelpCircle className="h-4 w-4" />
+        <span className="text-xs">Yardım</span>
+      </Link>
     </p>
   </footer>
 );

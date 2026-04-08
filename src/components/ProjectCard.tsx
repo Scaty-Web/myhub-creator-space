@@ -1,6 +1,7 @@
 import { Heart, Eye } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { Link } from "react-router-dom";
 
 interface ProjectData {
   id: string;
@@ -57,7 +58,7 @@ const ProjectCard = ({ project, userId, onLikeToggle }: Props) => {
           title={project.name}
         />
       </div>
-      <div className="p-4 space-y-2">
+      <Link to={`/project/${project.id}`} className="block p-4 space-y-2 hover:bg-secondary/30 transition-colors">
         <h3 className="font-semibold text-foreground">{project.name}</h3>
         <p className="text-sm text-muted-foreground line-clamp-2">{project.description}</p>
         <div className="flex items-center justify-between text-sm text-muted-foreground pt-1">
@@ -76,7 +77,7 @@ const ProjectCard = ({ project, userId, onLikeToggle }: Props) => {
             </span>
           </div>
         </div>
-      </div>
+      </Link>
     </div>
   );
 };
