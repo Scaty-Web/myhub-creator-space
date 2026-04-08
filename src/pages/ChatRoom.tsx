@@ -12,7 +12,7 @@ import { toast } from "sonner";
 interface Room {
   id: string;
   name: string;
-  password: string | null;
+  has_password: boolean;
   created_by: string;
   created_at: string;
 }
