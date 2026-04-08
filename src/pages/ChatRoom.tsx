@@ -44,8 +44,17 @@ const ChatRoom = () => {
   // Fetch rooms
   useEffect(() => {
     const fetchRooms = async () => {
-      const { data } = await supabase.from("chat_rooms").select("*").order("created_at", { ascending: false });
-      if (data) setRooms(data);
+      const { data } = await supabase.from("chat_rooms").select("id, name, created_by, created_at").order("created_at", { ascending: false });
+      if (data) setRooms(data.map((r: any) => ({ ...r, has_password: false })));
+      // Check which rooms have passwords via RPC
+      if (data) {
+        const updated = await Promise.all(data.map(async (r: any) => {
+          // A room has a password if verify_room_password with empty string returns false
+          const { data: isOpen } = await supabase.rpc("verify_room_password", { room_id: r.id, entered_password: "" });
+          return { ...r, has_password: isOpen === false };
+        }));
+        setRooms(updated);
+      }
     };
     fetchRooms();
   }, []);
