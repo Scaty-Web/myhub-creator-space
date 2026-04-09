@@ -32,7 +32,7 @@ const Help = () => {
         </h2>
         <p className="text-muted-foreground">
           {isTr
-            ? "MYHUB, 2025 yılında kurulmuştur. Scratch topluluğuna hizmet etmek amacıyla geliştirilmektedir."
+            ? "MYHUB, 2026 yılında yapılmıştır ve scratch toplulukları burada projeleri paylaşsın ve sonbet\nedilsin olarak yapılmıştır"
             : "MYHUB was founded in 2025. It is being developed to serve the Scratch community."}
         </p>
       </section>
