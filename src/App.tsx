@@ -17,6 +17,7 @@ import AIChat from "./pages/AIChat";
 import Auth from "./pages/Auth";
 import AccountSettings from "./pages/AccountSettings";
 import NotFound from "./pages/NotFound";
+import UserProfile from "./pages/UserProfile";
 
 const queryClient = new QueryClient();
 
@@ -41,6 +42,7 @@ const App = () => (
                 <Route path="/ai" element={<AIChat />} />
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/settings" element={<AccountSettings />} />
+                <Route path="/user/:userId" element={<UserProfile />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </main>

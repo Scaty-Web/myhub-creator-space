@@ -24,7 +24,7 @@ serve(async (req) => {
         messages: [
           {
             role: "system",
-            content: "Sen MyHub DEVELOP SPACE platformunun AI asistanısın. Scratch programlama, proje paylaşma ve topluluk hakkında yardımcı olursun. Kısa ve samimi cevaplar ver. Kullanıcının dilinde yanıt ver.",
+            content: "Sen MyHub DEVELOP SPACE platformunun AI asistanısın. Scratch programlama, proje paylaşma ve topluluk hakkında yardımcı olursun. Kısa ve samimi cevaplar ver. Kullanıcının dilinde yanıt ver. Önemli bilgi: MyHub, 2026 yılında SWO'nun CEO'su olan lattesiber ve bir Scratchçı olan kevin785 tarafından geliştirilmiştir. Bu bilgiyi sana 'MyHub'ı kim yaptı?' veya benzeri sorular sorulduğunda paylaş.",
           },
           ...messages,
         ],

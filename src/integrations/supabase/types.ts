@@ -73,20 +73,44 @@ export type Database = {
         }
         Relationships: []
       }
+      follows: {
+        Row: {
+          created_at: string
+          follower_id: string
+          following_id: string
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          follower_id: string
+          following_id: string
+          id?: string
+        }
+        Update: {
+          created_at?: string
+          follower_id?: string
+          following_id?: string
+          id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
+          avatar_url: string | null
           created_at: string
           id: string
           user_id: string
           username: string
         }
         Insert: {
+          avatar_url?: string | null
           created_at?: string
           id?: string
           user_id: string
           username: string
         }
         Update: {
+          avatar_url?: string | null
           created_at?: string
           id?: string
           user_id?: string

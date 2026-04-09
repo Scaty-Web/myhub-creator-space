@@ -160,7 +160,7 @@ const ProjectDetail = () => {
 
       <div className="space-y-2">
         <h1 className="text-2xl font-bold text-foreground">{project.name}</h1>
-        <p className="text-muted-foreground">@{project.author}</p>
+        <Link to={`/user/${project.user_id}`} className="text-muted-foreground hover:text-primary transition-colors">@{project.author}</Link>
       </div>
 
       <div className="w-full aspect-video rounded-lg overflow-hidden border border-border">
@@ -205,7 +205,7 @@ const ProjectDetail = () => {
           {comments.map((c) => (
             <div key={c.id} className="bg-secondary/50 rounded-lg p-3 space-y-1">
               <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-foreground">@{c.username}</span>
+                <Link to={`/user/${c.user_id}`} className="text-sm font-medium text-foreground hover:text-primary">@{c.username}</Link>
                 <span className="text-xs text-muted-foreground">
                   {new Date(c.created_at).toLocaleDateString()}
                 </span>
