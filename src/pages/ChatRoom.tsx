@@ -114,11 +114,13 @@ const ChatRoom = () => {
     toast.success(t(lang, "room_created"));
   };
 
-  const joinRoom = (room: Room) => {
+  const joinRoom = async (room: Room) => {
     if (room.has_password) {
       setAskPasswordRoom(room);
       setJoinPassword("");
     } else {
+      // Join open room via RPC (adds membership server-side)
+      await supabase.rpc("join_open_room", { target_room_id: room.id });
       setCurrentRoom(room);
       setMessages([]);
     }
@@ -134,6 +136,7 @@ const ChatRoom = () => {
       toast.error(t(lang, "wrong_password"));
       return;
     }
+    // Membership is now auto-added by the RPC on success
     setCurrentRoom(askPasswordRoom);
     setMessages([]);
     setAskPasswordRoom(null);
