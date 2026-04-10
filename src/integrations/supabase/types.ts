@@ -250,6 +250,16 @@ export type Database = {
     }
     Functions: {
       join_open_room: { Args: { target_room_id: string }; Returns: boolean }
+      list_chat_rooms: {
+        Args: never
+        Returns: {
+          created_at: string
+          created_by: string
+          has_password: boolean
+          id: string
+          name: string
+        }[]
+      }
       verify_room_password: {
         Args: { entered_password: string; room_id: string }
         Returns: boolean
