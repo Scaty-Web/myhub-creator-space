@@ -261,7 +261,7 @@ export type Database = {
         }[]
       }
       verify_room_password: {
-        Args: { entered_password: string; room_id: string }
+        Args: { entered_password: string; p_room_id: string }
         Returns: boolean
       }
     }
