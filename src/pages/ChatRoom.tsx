@@ -120,7 +120,7 @@ const ChatRoom = () => {
   const confirmJoin = async () => {
     if (!askPasswordRoom) return;
     const { data: isValid } = await supabase.rpc("verify_room_password", {
-      room_id: askPasswordRoom.id,
+      p_room_id: askPasswordRoom.id,
       entered_password: joinPassword,
     });
     if (!isValid) {
