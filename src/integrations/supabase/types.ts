@@ -55,21 +55,18 @@ export type Database = {
           created_by: string
           id: string
           name: string
-          password: string | null
         }
         Insert: {
           created_at?: string
           created_by: string
           id?: string
           name: string
-          password?: string | null
         }
         Update: {
           created_at?: string
           created_by?: string
           id?: string
           name?: string
-          password?: string | null
         }
         Relationships: []
       }
@@ -255,14 +252,9 @@ export type Database = {
         Returns: {
           created_at: string
           created_by: string
-          has_password: boolean
           id: string
           name: string
         }[]
-      }
-      verify_room_password: {
-        Args: { entered_password: string; p_room_id: string }
-        Returns: boolean
       }
     }
     Enums: {
