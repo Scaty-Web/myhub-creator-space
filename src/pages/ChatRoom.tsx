@@ -5,7 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Send, MessageCircle, Lock, Plus, ArrowLeft, DoorOpen, KeyRound, Trash2 } from "lucide-react";
+import { Send, MessageCircle, Lock, Plus, ArrowLeft, DoorOpen, Trash2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
 
@@ -35,16 +35,13 @@ const ChatRoom = () => {
   const [input, setInput] = useState("");
   const [showCreate, setShowCreate] = useState(false);
   const [newRoomName, setNewRoomName] = useState("");
-  const [newRoomPassword, setNewRoomPassword] = useState("");
-  const [joinPassword, setJoinPassword] = useState("");
-  const [askPasswordRoom, setAskPasswordRoom] = useState<Room | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   // Fetch rooms
   useEffect(() => {
     const fetchRooms = async () => {
-      const { data } = await supabase.rpc("list_chat_rooms" as any);
-      if (data) setRooms(data as any[]);
+      const { data } = await supabase.rpc("list_chat_rooms");
+      if (data) setRooms(data as Room[]);
     };
     fetchRooms();
   }, []);
@@ -93,44 +90,19 @@ const ChatRoom = () => {
     if (!newRoomName.trim()) return;
     const { data, error } = await supabase.from("chat_rooms").insert({
       name: newRoomName.trim(),
-      password: newRoomPassword.trim() || null,
       created_by: user.id,
     }).select().single();
     if (error) { toast.error(error.message); return; }
-    setRooms((prev) => [{ ...data, has_password: !!newRoomPassword.trim() } as Room, ...prev]);
+    setRooms((prev) => [data as Room, ...prev]);
     setNewRoomName("");
-    setNewRoomPassword("");
     setShowCreate(false);
     toast.success(t(lang, "room_created"));
   };
 
   const joinRoom = async (room: Room) => {
-    if (room.has_password) {
-      setAskPasswordRoom(room);
-      setJoinPassword("");
-    } else {
-      // Join open room via RPC (adds membership server-side)
-      await supabase.rpc("join_open_room", { target_room_id: room.id });
-      setCurrentRoom(room);
-      setMessages([]);
-    }
-  };
-
-  const confirmJoin = async () => {
-    if (!askPasswordRoom) return;
-    const { data: isValid } = await supabase.rpc("verify_room_password", {
-      p_room_id: askPasswordRoom.id,
-      entered_password: joinPassword,
-    });
-    if (!isValid) {
-      toast.error(t(lang, "wrong_password"));
-      return;
-    }
-    // Membership is now auto-added by the RPC on success
-    setCurrentRoom(askPasswordRoom);
+    await supabase.rpc("join_open_room", { target_room_id: room.id });
+    setCurrentRoom(room);
     setMessages([]);
-    setAskPasswordRoom(null);
-    setJoinPassword("");
   };
 
   const sendMessage = async () => {
@@ -170,48 +142,13 @@ const ChatRoom = () => {
             <Input
               value={newRoomName}
               onChange={(e) => setNewRoomName(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && createRoom()}
               placeholder={t(lang, "room_name")}
               className="bg-secondary border-border"
             />
-            <div className="flex items-center gap-2">
-              <KeyRound className="h-4 w-4 text-muted-foreground" />
-              <Input
-                value={newRoomPassword}
-                onChange={(e) => setNewRoomPassword(e.target.value)}
-                placeholder={t(lang, "room_password_optional")}
-                type="password"
-                className="bg-secondary border-border flex-1"
-              />
-            </div>
             <Button onClick={createRoom} className="gradient-primary text-primary-foreground border-0 w-full">
               {t(lang, "create_room")}
             </Button>
-          </div>
-        )}
-
-        {/* Password dialog */}
-        {askPasswordRoom && (
-          <div className="bg-card border border-border rounded-lg p-4 space-y-3">
-            <p className="text-sm text-foreground font-medium">
-              <Lock className="inline h-4 w-4 mr-1" />
-              {t(lang, "enter_room_password")} — {askPasswordRoom.name}
-            </p>
-            <Input
-              value={joinPassword}
-              onChange={(e) => setJoinPassword(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && confirmJoin()}
-              type="password"
-              placeholder={t(lang, "password")}
-              className="bg-secondary border-border"
-            />
-            <div className="flex gap-2">
-              <Button onClick={confirmJoin} className="gradient-primary text-primary-foreground border-0 flex-1">
-                {t(lang, "join")}
-              </Button>
-              <Button onClick={() => setAskPasswordRoom(null)} variant="outline" className="flex-1">
-                {t(lang, "cancel")}
-              </Button>
-            </div>
           </div>
         )}
 
@@ -233,7 +170,6 @@ const ChatRoom = () => {
                     {new Date(room.created_at).toLocaleDateString()}
                   </p>
                 </div>
-                {room.has_password && <Lock className="h-3.5 w-3.5 text-muted-foreground" />}
               </div>
               {room.created_by === user.id && (
                 <Button
