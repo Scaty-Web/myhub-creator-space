@@ -8,12 +8,20 @@ import { Button } from "@/components/ui/button";
 import { Send, MessageCircle, Lock, Plus, ArrowLeft, DoorOpen, Trash2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 
 interface Room {
   id: string;
   name: string;
   created_by: string;
   created_at: string;
+  has_password: boolean;
 }
 
 interface Message {
@@ -35,18 +43,20 @@ const ChatRoom = () => {
   const [input, setInput] = useState("");
   const [showCreate, setShowCreate] = useState(false);
   const [newRoomName, setNewRoomName] = useState("");
+  const [newRoomPassword, setNewRoomPassword] = useState("");
+  const [pendingRoom, setPendingRoom] = useState<Room | null>(null);
+  const [joinPassword, setJoinPassword] = useState("");
   const bottomRef = useRef<HTMLDivElement>(null);
 
-  // Fetch rooms
+  const refreshRooms = async () => {
+    const { data } = await supabase.rpc("list_chat_rooms");
+    if (data) setRooms(data as Room[]);
+  };
+
   useEffect(() => {
-    const fetchRooms = async () => {
-      const { data } = await supabase.rpc("list_chat_rooms");
-      if (data) setRooms(data as Room[]);
-    };
-    fetchRooms();
+    refreshRooms();
   }, []);
 
-  // Fetch messages + realtime
   useEffect(() => {
     if (!currentRoom) return;
 
@@ -88,21 +98,49 @@ const ChatRoom = () => {
 
   const createRoom = async () => {
     if (!newRoomName.trim()) return;
-    const { data, error } = await supabase.from("chat_rooms").insert({
-      name: newRoomName.trim(),
-      created_by: user.id,
-    }).select().single();
+    const { error } = await supabase.rpc("create_chat_room", {
+      room_name: newRoomName.trim(),
+      room_password: newRoomPassword.trim() || null,
+    });
     if (error) { toast.error(error.message); return; }
-    setRooms((prev) => [data as Room, ...prev]);
     setNewRoomName("");
+    setNewRoomPassword("");
     setShowCreate(false);
+    await refreshRooms();
     toast.success(t(lang, "room_created"));
   };
 
-  const joinRoom = async (room: Room) => {
-    await supabase.rpc("join_open_room", { target_room_id: room.id });
+  const enterRoom = async (room: Room, password?: string) => {
+    const { data, error } = await supabase.rpc("join_room_with_password", {
+      target_room_id: room.id,
+      room_password: password ?? null,
+    });
+    if (error) { toast.error(error.message); return false; }
+    if (data !== true) {
+      toast.error(t(lang, "wrong_password") || "Wrong password");
+      return false;
+    }
     setCurrentRoom(room);
     setMessages([]);
+    return true;
+  };
+
+  const handleRoomClick = async (room: Room) => {
+    if (room.has_password) {
+      setPendingRoom(room);
+      setJoinPassword("");
+    } else {
+      await enterRoom(room);
+    }
+  };
+
+  const submitJoinPassword = async () => {
+    if (!pendingRoom) return;
+    const ok = await enterRoom(pendingRoom, joinPassword);
+    if (ok) {
+      setPendingRoom(null);
+      setJoinPassword("");
+    }
   };
 
   const sendMessage = async () => {
@@ -122,7 +160,6 @@ const ChatRoom = () => {
     toast.success(t(lang, "room_deleted"));
   };
 
-  // Room list view
   if (!currentRoom) {
     return (
       <div className="container max-w-2xl py-8 space-y-4 animate-fade-in">
@@ -142,8 +179,14 @@ const ChatRoom = () => {
             <Input
               value={newRoomName}
               onChange={(e) => setNewRoomName(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && createRoom()}
               placeholder={t(lang, "room_name")}
+              className="bg-secondary border-border"
+            />
+            <Input
+              type="password"
+              value={newRoomPassword}
+              onChange={(e) => setNewRoomPassword(e.target.value)}
+              placeholder={t(lang, "room_password_optional") || "Password (optional)"}
               className="bg-secondary border-border"
             />
             <Button onClick={createRoom} className="gradient-primary text-primary-foreground border-0 w-full">
@@ -160,10 +203,14 @@ const ChatRoom = () => {
             <div
               key={room.id}
               className="bg-card border border-border rounded-lg p-4 flex items-center justify-between hover:border-primary/50 transition-colors cursor-pointer"
-              onClick={() => joinRoom(room)}
+              onClick={() => handleRoomClick(room)}
             >
               <div className="flex items-center gap-3">
-                <DoorOpen className="h-5 w-5 text-primary" />
+                {room.has_password ? (
+                  <Lock className="h-5 w-5 text-primary" />
+                ) : (
+                  <DoorOpen className="h-5 w-5 text-primary" />
+                )}
                 <div>
                   <p className="font-medium text-foreground">{room.name}</p>
                   <p className="text-xs text-muted-foreground">
@@ -184,11 +231,31 @@ const ChatRoom = () => {
             </div>
           ))}
         </div>
+
+        <Dialog open={!!pendingRoom} onOpenChange={(o) => !o && setPendingRoom(null)}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>{pendingRoom?.name}</DialogTitle>
+            </DialogHeader>
+            <Input
+              type="password"
+              value={joinPassword}
+              onChange={(e) => setJoinPassword(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && submitJoinPassword()}
+              placeholder={t(lang, "room_password") || "Password"}
+              autoFocus
+            />
+            <DialogFooter>
+              <Button onClick={submitJoinPassword} className="gradient-primary text-primary-foreground border-0">
+                {t(lang, "join") || "Join"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     );
   }
 
-  // Chat view inside a room
   return (
     <div className="container max-w-2xl py-8 space-y-4 animate-fade-in">
       <div className="flex items-center gap-2">
