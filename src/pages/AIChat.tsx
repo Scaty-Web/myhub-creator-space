@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Send, Bot, Lock } from "lucide-react";
 import { Link } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Msg {
   role: "user" | "assistant";
