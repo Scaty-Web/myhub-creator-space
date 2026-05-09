@@ -55,18 +55,21 @@ export type Database = {
           created_by: string
           id: string
           name: string
+          password_hash: string | null
         }
         Insert: {
           created_at?: string
           created_by: string
           id?: string
           name: string
+          password_hash?: string | null
         }
         Update: {
           created_at?: string
           created_by?: string
           id?: string
           name?: string
+          password_hash?: string | null
         }
         Relationships: []
       }
@@ -246,12 +249,21 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      create_chat_room: {
+        Args: { room_name: string; room_password?: string }
+        Returns: string
+      }
       join_open_room: { Args: { target_room_id: string }; Returns: boolean }
+      join_room_with_password: {
+        Args: { room_password?: string; target_room_id: string }
+        Returns: boolean
+      }
       list_chat_rooms: {
         Args: never
         Returns: {
           created_at: string
           created_by: string
+          has_password: boolean
           id: string
           name: string
         }[]
